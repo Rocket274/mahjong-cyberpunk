@@ -1,0 +1,17 @@
+{
+  "name": "Mahjong Infini — Neon City 2077",
+  "short_name": "Mahjong Infini",
+  "description": "Mahjong solitaire sans publicité, plateaux générés à l'infini, pouvoirs d'aide, thème cyberpunk Neon City 2077.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0d0620",
+  "theme_color": "#0d0620",
+  "lang": "fr",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
