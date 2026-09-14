@@ -1,32 +1,128 @@
 "use strict";
 
 /* ============================================================
-   THEMES — tile symbol sets (index-matched, 34 entries each)
-   Classic = official Unicode Mahjong Tiles block.
-   Cyberpunk = original "Neon City 2077" icon set (emoji-based,
-   no reproduction of any copyrighted logos or artwork).
+   THEMES
+   Tile faces are drawn as inline SVG (no emoji, no external font
+   glyphs) so they render identically and crisply on every phone,
+   instead of relying on device-dependent emoji/Unicode fonts.
    ============================================================ */
 const THEMES = {
-  classic: {
-    label: "Classique",
-    symbols: [
-      "🀀","🀁","🀂","🀃","🀄","🀅","🀆",
-      "🀇","🀈","🀉","🀊","🀋","🀌","🀍","🀎","🀏",
-      "🀐","🀑","🀒","🀓","🀔","🀕","🀖","🀗","🀘",
-      "🀙","🀚","🀛","🀜","🀝","🀞","🀟","🀠","🀡"
-    ]
-  },
-  cyberpunk: {
-    label: "Neon City 2077",
-    symbols: [
-      "🤖","🧠","👁️","💾","📡","🛰️","🚗","🏍️","🔫",
-      "💊","💉","🩸","⚡","🔋","🖥️","📱","🎮","🦾",
-      "🦿","🐉","🌆","🏙️","🌃","🚁","🛸","🔦","🧬",
-      "☠️","👾","🕶️","🔑","💰","🃏","🔌"
-    ]
-  }
+  classic: { label: "Classique" },
+  cyberpunk: { label: "Neon City 2077" }
 };
-const TYPE_COUNT = THEMES.classic.symbols.length;
+const TYPE_COUNT = 34; // 4 winds + 3 dragons + 9x3 suits, classic mahjong set
+
+/* ---------- shared 3x3 dot/stick layout table (suits 1-9) ---------- */
+const DOT_LAYOUTS = {
+  1: [[1, 1]],
+  2: [[0, 0], [2, 2]],
+  3: [[0, 0], [1, 1], [2, 2]],
+  4: [[0, 0], [2, 0], [0, 2], [2, 2]],
+  5: [[0, 0], [2, 0], [1, 1], [0, 2], [2, 2]],
+  6: [[0, 0], [2, 0], [0, 1], [2, 1], [0, 2], [2, 2]],
+  7: [[1, 0], [0, 1], [1, 1], [2, 1], [0, 0], [0, 2], [2, 2]],
+  8: [[0, 0], [1, 0], [2, 0], [0, 1], [2, 1], [0, 2], [1, 2], [2, 2]],
+  9: [[0, 0], [1, 0], [2, 0], [0, 1], [1, 1], [2, 1], [0, 2], [1, 2], [2, 2]]
+};
+const gx = (g) => 4 + g * 8;
+const gy = (g) => 4 + g * 8;
+
+/* ---------- CLASSIC theme: hand-composed SVG per tile ---------- */
+const WIND_DEF = [
+  { letter: "E", angle: 90 },   // East
+  { letter: "S", angle: 180 },  // South
+  { letter: "O", angle: 270 },  // Ouest (West)
+  { letter: "N", angle: 0 }     // North
+];
+const CLASSIC_COLORS = { wind: "#8a6a2f", char: "#2d4f8f", bamboo: "#2f7a3d", circle: "#b1472e" };
+
+function svgWrap(inner) {
+  return `<svg viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet">${inner}</svg>`;
+}
+
+function classicGlyph(idx) {
+  if (idx < 4) {
+    const { letter, angle } = WIND_DEF[idx];
+    const c = CLASSIC_COLORS.wind;
+    return svgWrap(
+      `<circle cx="12" cy="12" r="9.2" fill="none" stroke="${c}" stroke-width="1.4"/>
+       <g transform="rotate(${angle} 12 12)"><path d="M12 4.2 L15 11 L12 9.1 L9 11 Z" fill="${c}"/></g>
+       <text x="12" y="21.6" font-size="6.4" text-anchor="middle" fill="${c}" font-weight="700" font-family="Arial,sans-serif">${letter}</text>`
+    );
+  }
+  if (idx < 7) {
+    if (idx === 4) return svgWrap(`<rect x="4.5" y="4.5" width="15" height="15" rx="3" fill="#c1503e"/><rect x="9.5" y="6.5" width="5" height="11" fill="#f6efdd"/><rect x="6.5" y="10.2" width="11" height="2.6" fill="#f6efdd"/>`);
+    if (idx === 5) return svgWrap(`<path d="M7 9 Q12 3 17 9 Q22 15 16.5 16.5 Q12 18 7.5 16.5 Q2 15 7 9 Z" fill="none" stroke="#2f7a3d" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>`);
+    return svgWrap(`<rect x="4.5" y="4.5" width="15" height="15" rx="3" fill="none" stroke="#3f6fae" stroke-width="1.8"/><rect x="7.5" y="7.5" width="9" height="9" rx="1.4" fill="none" stroke="#3f6fae" stroke-width="1.1"/>`);
+  }
+  if (idx < 16) {
+    const n = idx - 6;
+    const c = CLASSIC_COLORS.char;
+    return svgWrap(
+      `<text x="12" y="15.5" font-size="12.5" text-anchor="middle" font-weight="800" fill="${c}" font-family="Arial,sans-serif">${n}</text>
+       <ellipse cx="12" cy="19.6" rx="4.6" ry="1.5" fill="none" stroke="${c}" stroke-width="1"/>`
+    );
+  }
+  if (idx < 25) {
+    const n = idx - 15;
+    const c = CLASSIC_COLORS.bamboo;
+    const pts = DOT_LAYOUTS[n].map(([px, py]) =>
+      `<g transform="translate(${gx(px) - 1.3},${gy(py) - 4})"><rect width="2.6" height="8" rx="1.3" fill="${c}"/><line x1="0" y1="2.7" x2="2.6" y2="2.7" stroke="#f6efdd" stroke-width="0.6"/><line x1="0" y1="5.3" x2="2.6" y2="5.3" stroke="#f6efdd" stroke-width="0.6"/></g>`
+    ).join("");
+    return svgWrap(pts);
+  }
+  {
+    const n = idx - 24;
+    const c = CLASSIC_COLORS.circle;
+    const pts = DOT_LAYOUTS[n].map(([px, py]) =>
+      `<circle cx="${gx(px)}" cy="${gy(py)}" r="2.5" fill="${c}"/><circle cx="${gx(px)}" cy="${gy(py)}" r="1" fill="#f6efdd"/>`
+    ).join("");
+    return svgWrap(pts);
+  }
+}
+function classicAccent(idx) {
+  if (idx < 4) return CLASSIC_COLORS.wind;
+  if (idx < 7) return ["#c1503e", "#2f7a3d", "#3f6fae"][idx - 4];
+  if (idx < 16) return CLASSIC_COLORS.char;
+  if (idx < 25) return CLASSIC_COLORS.bamboo;
+  return CLASSIC_COLORS.circle;
+}
+
+/* ---------- CYBERPUNK theme: original neon "netrunner" glyph set ---------- */
+const CP_GLYPHS = [
+  (c) => `<circle cx="12" cy="12" r="4.2" fill="none" stroke="${c}" stroke-width="1.7"/><circle cx="12" cy="12" r="1.3" fill="${c}"/><line x1="12" y1="3" x2="12" y2="6.4" stroke="${c}" stroke-width="1.4"/><line x1="12" y1="17.6" x2="12" y2="21" stroke="${c}" stroke-width="1.4"/>`,
+  (c) => `<rect x="6" y="6" width="12" height="12" rx="1.5" fill="none" stroke="${c}" stroke-width="1.6"/><rect x="9.5" y="9.5" width="5" height="5" fill="${c}"/><line x1="9" y1="3" x2="9" y2="6" stroke="${c}" stroke-width="1.3"/><line x1="15" y1="3" x2="15" y2="6" stroke="${c}" stroke-width="1.3"/><line x1="9" y1="18" x2="9" y2="21" stroke="${c}" stroke-width="1.3"/><line x1="15" y1="18" x2="15" y2="21" stroke="${c}" stroke-width="1.3"/>`,
+  (c) => `<path d="M12 3l8 4.6v8.8L12 21l-8-4.6V7.6z" fill="none" stroke="${c}" stroke-width="1.6"/><circle cx="12" cy="12" r="2" fill="${c}"/>`,
+  (c) => `<path d="M13 2L5 14h5l-2 8 9-13h-5z" fill="${c}"/>`,
+  (c) => `<path d="M3 13c2.2-5 4.4-5 6.6 0s4.4 5 6.6 0 4.4-5 6.6 0" fill="none" stroke="${c}" stroke-width="1.7" stroke-linecap="round"/>`,
+  (c) => `<path d="M12 4a5 5 0 015 5c0 3-2.2 4-2.2 7H9.2C9.2 13 7 12 7 9a5 5 0 015-5z" fill="none" stroke="${c}" stroke-width="1.6"/><path d="M9 19.5h6M9.8 21.3h4.4" stroke="${c}" stroke-width="1.4" stroke-linecap="round"/>`,
+  (c) => `<path d="M6 21c0-4.4 2.9-7 6-7s6 2.6 6 7" fill="none" stroke="${c}" stroke-width="1.6"/><circle cx="12" cy="8.5" r="4.3" fill="none" stroke="${c}" stroke-width="1.6"/>`,
+  (c) => `<circle cx="12" cy="12" r="3" fill="none" stroke="${c}" stroke-width="1.6"/><line x1="12" y1="2.7" x2="12" y2="7.2" stroke="${c}" stroke-width="1.6"/><line x1="12" y1="16.8" x2="12" y2="21.3" stroke="${c}" stroke-width="1.6"/><line x1="2.7" y1="12" x2="7.2" y2="12" stroke="${c}" stroke-width="1.6"/><line x1="16.8" y1="12" x2="21.3" y2="12" stroke="${c}" stroke-width="1.6"/>`,
+  (c) => `<path d="M4.5 4.5l6.2 6.2M19.5 4.5l-6.2 6.2M4.5 19.5l6.2-6.2M19.5 19.5l-6.2-6.2" stroke="${c}" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="1.6" fill="${c}"/>`,
+  (c) => `<rect x="5" y="10" width="14" height="7.5" rx="2" fill="none" stroke="${c}" stroke-width="1.6"/><path d="M8 10V6.6a4 4 0 018 0V10" fill="none" stroke="${c}" stroke-width="1.6"/><circle cx="12" cy="13.7" r="1.3" fill="${c}"/>`
+];
+const CP_COLORS = ["#ff2fd4", "#00f0ff", "#ffe600"];
+
+function cyberpunkGlyph(idx) {
+  const glyphFn = CP_GLYPHS[idx % CP_GLYPHS.length];
+  const color = CP_COLORS[Math.floor(idx / CP_GLYPHS.length) % CP_COLORS.length];
+  let mark = "";
+  if (idx >= 30) {
+    const n = idx - 29;
+    for (let i = 0; i < n; i++) mark += `<circle cx="${19 - i * 3.4}" cy="4.2" r="1.15" fill="${color}"/>`;
+  }
+  return svgWrap(glyphFn(color) + mark);
+}
+function cyberpunkAccent(idx) {
+  return CP_COLORS[Math.floor(idx / CP_GLYPHS.length) % CP_COLORS.length];
+}
+
+function tileGraphic(theme, idx) {
+  return theme === "cyberpunk" ? cyberpunkGlyph(idx) : classicGlyph(idx);
+}
+function tileAccent(theme, idx) {
+  return theme === "cyberpunk" ? cyberpunkAccent(idx) : classicAccent(idx);
+}
 
 /* ============================================================
    SEEDED RNG (mulberry32) — same seed always → same board,
@@ -61,8 +157,11 @@ function parseKey(k) { const [r, c] = k.split("_").map(Number); return { row: r,
 
 function buildShape(seed) {
   const rand = mulberry32(seed);
-  const cols = 12 + 2 * Math.floor(rand() * 5);   // 12..20 (even)
-  const rows = 6 + 2 * Math.floor(rand() * 3);    // 6..10 (even)
+  // Portrait phones get a taller/narrower board so it fills the screen
+  // instead of shrinking down to fit a wide landscape shape.
+  const portrait = typeof window !== "undefined" && window.innerWidth > 0 && window.innerWidth <= window.innerHeight;
+  const cols = portrait ? 8 + 2 * Math.floor(rand() * 4) : 12 + 2 * Math.floor(rand() * 5);   // 8..14 portrait / 12..20 landscape (even)
+  const rows = portrait ? 10 + 2 * Math.floor(rand() * 4) : 6 + 2 * Math.floor(rand() * 3);   // 10..16 portrait / 6..10 landscape (even)
   const half = cols / 2;
   const cy = (rows - 1) / 2;
   const rx = half * (0.55 + rand() * 0.42);
@@ -179,9 +278,12 @@ const state = {
   theme: "classic"
 };
 
-const STEP_X = 34, STEP_Y = 44, TILE_W = 42, TILE_H = 56;
+const STEP_X = 36, STEP_Y = 46, TILE_W = 46, TILE_H = 60;
 const LAYER_OFF_X = 7, LAYER_OFF_Y = 9;
-const PAD = 24;
+const PAD = 20;
+
+/* subtle haptic feedback on supported phones (no-op elsewhere) */
+function vibrate(pattern) { if (navigator.vibrate) { try { navigator.vibrate(pattern); } catch (e) {} } }
 
 const el = (id) => document.getElementById(id);
 const boardEl = el("board");
@@ -223,11 +325,6 @@ function findMatchPair() {
 /* ============================================================
    RENDERING
    ============================================================ */
-function tileSymbol(tile) {
-  const syms = THEMES[state.theme].symbols;
-  return syms[tile.type % syms.length];
-}
-
 function render() {
   boardEl.innerHTML = "";
   const width = state.cols * STEP_X + TILE_W + state.layerCount * LAYER_OFF_X + PAD * 2;
@@ -257,8 +354,9 @@ function render() {
 
     const sym = document.createElement("span");
     sym.className = "tile-symbol";
-    sym.textContent = tileSymbol(tile);
+    sym.innerHTML = tileGraphic(state.theme, tile.type);
     div.appendChild(sym);
+    div.style.setProperty("--tile-accent", tileAccent(state.theme, tile.type));
 
     if (!isFree(tile)) div.classList.add("locked");
     if (state.selected && state.selected.id === tile.id) div.classList.add("selected");
@@ -308,6 +406,7 @@ function onTileClick(tile) {
       const [a, b] = state.jokerPicks;
       a.removed = true; b.removed = true;
       state.history.push({ type: "joker", a: a.id, b: b.id });
+      vibrate([15, 25, 15]);
       state.powers.joker--;
       state.moves++;
       state.jokerMode = false;
@@ -322,7 +421,7 @@ function onTileClick(tile) {
     return;
   }
 
-  if (!isFree(tile)) { toast("Cette tuile est bloquée."); if (tileEl) flashLocked(tileEl); return; }
+  if (!isFree(tile)) { toast("Cette tuile est bloquée."); vibrate(8); if (tileEl) flashLocked(tileEl); return; }
 
   if (!state.selected) {
     state.selected = tile;
@@ -340,12 +439,14 @@ function onTileClick(tile) {
     state.history.push({ type: "match", a: a.id, b: b.id });
     state.selected = null;
     state.moves++;
+    vibrate(15);
     render();
     checkGameStatus();
   } else {
     const prevSel = boardEl.querySelector(`[data-id="${state.selected.id}"]`);
     if (prevSel) flashLocked(prevSel);
     if (tileEl) flashLocked(tileEl);
+    vibrate([10, 30, 10]);
     state.selected = tile;
     render();
   }
@@ -428,6 +529,7 @@ function checkGameStatus() {
 
 function showWin() {
   stopTimer();
+  vibrate([20, 60, 20, 60, 40]);
   openModal("tpl-win", (frag) => {
     frag.querySelector("#win-stats").textContent =
       `${state.moves} coups, ${formatTime(elapsedSeconds())}.`;

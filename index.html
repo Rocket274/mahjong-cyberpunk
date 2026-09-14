@@ -2,16 +2,18 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Mahjong Infini</title>
-<meta name="description" content="Mahjong solitaire avec plateaux générés à l'infini, pouvoirs d'aide et thème Neon City 2077.">
+<meta name="description" content="Mahjong solitaire pour mobile : plateaux générés à l'infini, pouvoirs d'aide et thème Neon City 2077.">
 <meta name="theme-color" content="#0d0620">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Mahjong Infini">
+<meta name="format-detection" content="telephone=no">
 <link rel="stylesheet" href="style.css">
 </head>
 <body class="theme-classic">
@@ -24,19 +26,24 @@
       <span class="seed-label" id="seed-label">plateau #000000</span>
     </div>
   </div>
-
   <div class="stats" aria-live="polite">
     <div class="stat"><span class="stat-value" id="stat-tiles">0</span><span class="stat-label">tuiles</span></div>
     <div class="stat"><span class="stat-value" id="stat-moves">0</span><span class="stat-label">coups</span></div>
     <div class="stat"><span class="stat-value" id="stat-time">00:00</span><span class="stat-label">temps</span></div>
   </div>
-
   <div class="top-actions">
     <button id="btn-help" class="icon-btn" title="Comment jouer">?</button>
     <button id="btn-theme" class="icon-btn" title="Changer de thème">🎨</button>
     <button id="install-btn" class="icon-btn hidden" title="Installer l'application">📲</button>
   </div>
 </header>
+
+<main id="board-viewport" class="board-viewport">
+  <div id="board-wrapper" class="board-wrapper">
+    <div id="board" class="board" role="grid" aria-label="Plateau de mahjong"></div>
+  </div>
+  <div id="joker-hint" class="joker-hint hidden">Touchez 2 tuiles libres à faire disparaître</div>
+</main>
 
 <nav id="powers-bar" class="powers-bar">
   <button class="power-btn" id="power-hint" data-power="hint">
@@ -60,22 +67,15 @@
     <span class="power-count" id="count-undo">3</span>
   </button>
   <span class="powers-sep"></span>
-  <button class="power-btn action" id="btn-restart">
+  <button class="power-btn action" id="btn-restart" title="Recommencer ce plateau">
     <span class="power-icon">🔁</span>
-    <span class="power-name">Recommencer</span>
+    <span class="power-name">Reset</span>
   </button>
-  <button class="power-btn action primary" id="btn-newboard">
+  <button class="power-btn action primary" id="btn-newboard" title="Nouveau plateau">
     <span class="power-icon">✨</span>
-    <span class="power-name">Nouveau plateau</span>
+    <span class="power-name">Nouveau</span>
   </button>
 </nav>
-
-<main id="board-viewport" class="board-viewport">
-  <div id="board-wrapper" class="board-wrapper">
-    <div id="board" class="board" role="grid" aria-label="Plateau de mahjong"></div>
-  </div>
-  <div id="joker-hint" class="joker-hint hidden">Sélectionnez 2 tuiles libres à faire disparaître</div>
-</main>
 
 <div id="toast" class="toast" aria-live="polite"></div>
 
@@ -88,7 +88,7 @@
 
 <template id="tpl-help">
   <h2>Comment jouer</h2>
-  <p>Le plateau empile des tuiles sur plusieurs étages. Une tuile est <strong>libre</strong> si rien n'est posé au-dessus d'elle, et si sa gauche ou sa droite n'est pas bloquée par une autre tuile.</p>
+  <p>Le plateau empile des tuiles sur plusieurs étages. Une tuile est <strong>libre</strong> si rien n'est posé au-dessus, et si sa gauche ou sa droite n'est pas bloquée.</p>
   <p>Touchez deux tuiles libres identiques pour les retirer. Videz le plateau pour gagner.</p>
   <h3>Pouvoirs</h3>
   <ul>
@@ -97,7 +97,7 @@
     <li><strong>⚡ Joker</strong> — supprime 2 tuiles libres de votre choix, même différentes.</li>
     <li><strong>⏪ Annuler</strong> — reprend le dernier coup.</li>
   </ul>
-  <p><strong>Recommencer</strong> relance le plateau actuel à zéro. <strong>Nouveau plateau</strong> génère une disposition totalement différente — il en existe virtuellement l'infini.</p>
+  <p><strong>🔁 Reset</strong> relance le plateau actuel à zéro. <strong>✨ Nouveau</strong> génère une disposition totalement différente — il en existe virtuellement l'infini.</p>
   <button class="btn-primary" id="help-close">Compris</button>
 </template>
 
@@ -113,11 +113,11 @@
       Neon City 2077
     </button>
   </div>
-  <p class="theme-note">Thème « Neon City 2077 » : identité visuelle originale inspirée de l'esthétique cyberpunk (néons, glitch, netrunners) — pas de logos ou visuels protégés reproduits.</p>
+  <p class="theme-note">Thème « Neon City 2077 » : identité visuelle originale inspirée de l'esthétique cyberpunk (néons, glitch, netrunners) — aucun logo ni visuel protégé reproduit.</p>
 </template>
 
 <template id="tpl-win">
-  <h2 class="win-title">Plateau vidé</h2>
+  <h2 class="win-title">Plateau vidé 🎉</h2>
   <p id="win-stats"></p>
   <div class="modal-actions">
     <button class="btn-secondary" id="win-restart">Rejouer ce plateau</button>
