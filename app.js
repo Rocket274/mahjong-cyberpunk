@@ -279,8 +279,13 @@ const state = {
 };
 
 const STEP_X = 36, STEP_Y = 46, TILE_W = 46, TILE_H = 60;
-const LAYER_OFF_X = 7, LAYER_OFF_Y = 9;
+// The per-layer stack offset is capped (MAX_OFFSET_LAYERS) so that on
+// boards with many layers, the cumulative "tilt" never drifts far enough
+// to fully overlap — and hide — an unrelated tile from a different
+// row/col stack.
+const LAYER_OFF_X = 4, LAYER_OFF_Y = 5, MAX_OFFSET_LAYERS = 4;
 const PAD = 20;
+function layerOffset(layer) { return Math.min(layer, MAX_OFFSET_LAYERS); }
 
 /* subtle haptic feedback on supported phones (no-op elsewhere) */
 function vibrate(pattern) { if (navigator.vibrate) { try { navigator.vibrate(pattern); } catch (e) {} } }
@@ -327,8 +332,8 @@ function findMatchPair() {
    ============================================================ */
 function render() {
   boardEl.innerHTML = "";
-  const width = state.cols * STEP_X + TILE_W + state.layerCount * LAYER_OFF_X + PAD * 2;
-  const height = state.rows * STEP_Y + TILE_H + state.layerCount * LAYER_OFF_Y + PAD * 2;
+  const width = state.cols * STEP_X + TILE_W + layerOffset(state.layerCount) * LAYER_OFF_X + PAD * 2;
+  const height = state.rows * STEP_Y + TILE_H + layerOffset(state.layerCount) * LAYER_OFF_Y + PAD * 2;
   boardEl.style.width = width + "px";
   boardEl.style.height = height + "px";
 
@@ -344,8 +349,8 @@ function render() {
     div.dataset.id = tile.id;
     div.setAttribute("tabindex", "0");
     div.setAttribute("role", "gridcell");
-    const x = PAD + tile.col * STEP_X + tile.layer * LAYER_OFF_X;
-    const y = PAD + tile.row * STEP_Y - tile.layer * LAYER_OFF_Y;
+    const x = PAD + tile.col * STEP_X + layerOffset(tile.layer) * LAYER_OFF_X;
+    const y = PAD + tile.row * STEP_Y - layerOffset(tile.layer) * LAYER_OFF_Y;
     div.style.left = x + "px";
     div.style.top = y + "px";
     div.style.width = TILE_W + "px";

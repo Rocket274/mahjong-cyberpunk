@@ -25,19 +25,14 @@ servis via http(s), pas en ouvrant index.html directement (file://).
      python3 -m http.server 8080
    puis ouvrez http://localhost:8080 sur le même réseau.
 
-CE QUI A CHANGÉ DANS CETTE VERSION
-------------------------------------
-- Tuiles entièrement redessinées en SVG vectoriel fait main (plus
-  d'émojis ni de glyphes Unicode qui s'affichaient de travers ou
-  "en boîte" selon les téléphones). Thème classique : vrais motifs de
-  vents / dragons / caractères / bambous / cercles dessinés à la main.
-  Thème Neon City 2077 : 10 pictogrammes "netrunner" originaux x 3
-  couleurs néon, cohérents avec l'ambiance cyberpunk.
-- Mise en page repensée pour le téléphone : barre de pouvoirs fixée en
-  bas (zone de pouce), zones sûres (encoche / barre de gestes) gérées
-  partout, cibles tactiles agrandies, vibrations légères au clic.
-- Les plateaux générés en mode portrait sont maintenant plus hauts que
-  larges pour remplir l'écran du téléphone au lieu de rétrécir.
+DERNIER CORRECTIF
+------------------
+Le décalage visuel entre étages (l'effet "tilt" 3D) était cumulatif et
+pouvait, sur les plateaux à beaucoup d'étages, finir par recouvrir
+entièrement une tuile appartenant à une autre pile — la rendant
+invisible et injouable même si elle était logiquement libre. Le
+décalage est maintenant plafonné : les étages restent visuellement
+distincts sans jamais engloutir une tuile voisine.
 
 À PROPOS DU THÈME "NEON CITY 2077"
 -----------------------------------
