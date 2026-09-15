@@ -34,6 +34,8 @@ body.theme-classic {
   --tile-face: #f6efdd;
   --tile-face-2: #eaded0;
   --tile-edge: #cbb178;
+  --tile-side: #c9ad72;
+  --tile-side-2: #a3874f;
   --tile-selected: #d8b45a;
   --danger: #c1503e;
   --font-display: 'Georgia', 'Times New Roman', serif;
@@ -55,6 +57,8 @@ body.theme-cyberpunk {
   --tile-face: #150c25;
   --tile-face-2: #1c1030;
   --tile-edge: #ff2fd4;
+  --tile-side: #2a1740;
+  --tile-side-2: #170a26;
   --tile-selected: #ffe600;
   --danger: #ff3b5c;
   --font-display: 'Audiowide', 'Orbitron', 'Segoe UI', system-ui, sans-serif;
@@ -140,18 +144,35 @@ body.theme-cyberpunk .board-viewport {
   display: flex; align-items: center; justify-content: center;
   background: linear-gradient(155deg, var(--tile-face), var(--tile-face-2));
   border: 1px solid var(--tile-edge);
-  box-shadow: 0 2px 0 rgba(0,0,0,.25), 0 6px 10px -4px rgba(0,0,0,.5);
-  transition: transform .1s ease, box-shadow .1s ease, filter .12s ease;
+  box-shadow:
+    inset 0 3px 0 0 var(--tile-accent, transparent),
+    0 3px 7px -2px rgba(0,0,0,.5);
+  transition: transform .1s ease, filter .12s ease;
   will-change: transform;
-  overflow: hidden;
+  overflow: visible; /* let the 3D side faces below poke out past the tile's own box */
+}
+/* Real 3D thickness: a right-side face and a bottom-side face, both a
+   darker shade of the tile, like the visible edge of a physical tile.
+   Light is assumed to come from the top-left, so the bottom face reads
+   darker than the right face. */
+.tile::before {
+  content: ""; position: absolute; top: 5px; right: -6px;
+  width: 6px; height: calc(100% - 5px);
+  background: var(--tile-side);
+  border-radius: 0 var(--radius) var(--radius) 0;
 }
 .tile::after {
-  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-  background: var(--tile-accent, transparent);
-  border-radius: var(--radius) var(--radius) 0 0;
+  content: ""; position: absolute; left: 5px; bottom: -6px;
+  width: calc(100% - 5px); height: 6px;
+  background: var(--tile-side-2);
+  border-radius: 0 0 var(--radius) var(--radius);
 }
 body.theme-cyberpunk .tile {
-  box-shadow: 0 0 0 1px rgba(255,47,212,.15) inset, 0 3px 10px -3px rgba(0,0,0,.7), 0 0 8px -2px var(--accent-2);
+  box-shadow:
+    inset 0 3px 0 0 var(--tile-accent, transparent),
+    0 0 0 1px rgba(255,47,212,.15) inset,
+    0 3px 10px -3px rgba(0,0,0,.7),
+    0 0 8px -2px var(--accent-2);
 }
 .tile-symbol { pointer-events: none; width: 68%; height: 68%; display: flex; align-items: center; justify-content: center; }
 .tile-symbol svg { width: 100%; height: 100%; overflow: visible; }

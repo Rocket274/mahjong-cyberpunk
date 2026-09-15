@@ -4,7 +4,7 @@ MAHJONG INFINI — NEON CITY 2077 (édition mobile)
 CONTENU
 -------
 index.html   Structure de l'app
-style.css    Thème "Classique" + thème "Neon City 2077", mise en page mobile-first
+style.css    Thème "Classique" + thème "Neon City 2077", mise en page mobile-first, vrai relief 3D
 app.js       Générateur de plateaux, règles, pouvoirs, tuiles SVG, PWA
 manifest.json  Manifeste d'installation (PWA)
 sw.js        Service worker (jeu 100% hors-ligne après 1er chargement)
@@ -25,14 +25,17 @@ servis via http(s), pas en ouvrant index.html directement (file://).
      python3 -m http.server 8080
    puis ouvrez http://localhost:8080 sur le même réseau.
 
-DERNIER CORRECTIF
-------------------
-Le décalage visuel entre étages (l'effet "tilt" 3D) était cumulatif et
-pouvait, sur les plateaux à beaucoup d'étages, finir par recouvrir
-entièrement une tuile appartenant à une autre pile — la rendant
-invisible et injouable même si elle était logiquement libre. Le
-décalage est maintenant plafonné : les étages restent visuellement
-distincts sans jamais engloutir une tuile voisine.
+DERNIERS CORRECTIFS
+---------------------
+- Chaque tuile a maintenant un vrai relief 3D : une face droite et une
+  face inférieure visibles, plus sombres, comme l'épaisseur physique
+  d'une tuile. L'empilement penche vers le haut-gauche (les étages
+  supérieurs se décalent vers le haut et la gauche), ce qui révèle les
+  "marches" des tuiles en dessous en bas à droite — comme un vrai
+  plateau de mahjong photographié en angle.
+- Le décalage entre étages reste plafonné : même sur un plateau à
+  beaucoup d'étages, il ne peut jamais dériver assez pour recouvrir
+  entièrement une tuile d'une autre pile.
 
 À PROPOS DU THÈME "NEON CITY 2077"
 -----------------------------------

@@ -118,10 +118,12 @@ function cyberpunkAccent(idx) {
 }
 
 function tileGraphic(theme, idx) {
-  return theme === "cyberpunk" ? cyberpunkGlyph(idx) : classicGlyph(idx);
+  if (theme === "cyberpunk") return cyberpunkGlyph(idx);
+  return classicGlyph(idx);
 }
 function tileAccent(theme, idx) {
-  return theme === "cyberpunk" ? cyberpunkAccent(idx) : classicAccent(idx);
+  if (theme === "cyberpunk") return cyberpunkAccent(idx);
+  return classicAccent(idx);
 }
 
 /* ============================================================
@@ -282,8 +284,12 @@ const STEP_X = 36, STEP_Y = 46, TILE_W = 46, TILE_H = 60;
 // The per-layer stack offset is capped (MAX_OFFSET_LAYERS) so that on
 // boards with many layers, the cumulative "tilt" never drifts far enough
 // to fully overlap — and hide — an unrelated tile from a different
-// row/col stack.
-const LAYER_OFF_X = 4, LAYER_OFF_Y = 5, MAX_OFFSET_LAYERS = 4;
+// row/col stack. Higher layers shift up-and-LEFT (matches the requested
+// look), which is why EXTRA_X/EXTRA_Y exist: they pre-shift the whole
+// board right/down so nothing at layer 0 ever renders off-canvas.
+const LAYER_OFF_X = 6, LAYER_OFF_Y = 6, MAX_OFFSET_LAYERS = 4;
+const EXTRA_X = MAX_OFFSET_LAYERS * LAYER_OFF_X;
+const EXTRA_Y = MAX_OFFSET_LAYERS * LAYER_OFF_Y;
 const PAD = 20;
 function layerOffset(layer) { return Math.min(layer, MAX_OFFSET_LAYERS); }
 
@@ -332,8 +338,8 @@ function findMatchPair() {
    ============================================================ */
 function render() {
   boardEl.innerHTML = "";
-  const width = state.cols * STEP_X + TILE_W + layerOffset(state.layerCount) * LAYER_OFF_X + PAD * 2;
-  const height = state.rows * STEP_Y + TILE_H + layerOffset(state.layerCount) * LAYER_OFF_Y + PAD * 2;
+  const width = state.cols * STEP_X + TILE_W + EXTRA_X + PAD * 2;
+  const height = state.rows * STEP_Y + TILE_H + EXTRA_Y + PAD * 2;
   boardEl.style.width = width + "px";
   boardEl.style.height = height + "px";
 
@@ -349,8 +355,10 @@ function render() {
     div.dataset.id = tile.id;
     div.setAttribute("tabindex", "0");
     div.setAttribute("role", "gridcell");
-    const x = PAD + tile.col * STEP_X + layerOffset(tile.layer) * LAYER_OFF_X;
-    const y = PAD + tile.row * STEP_Y - layerOffset(tile.layer) * LAYER_OFF_Y;
+    // Higher layers tilt up-and-to-the-left: EXTRA_X/EXTRA_Y keep every
+    // coordinate positive regardless of how far a tile has shifted.
+    const x = PAD + EXTRA_X + tile.col * STEP_X - layerOffset(tile.layer) * LAYER_OFF_X;
+    const y = PAD + EXTRA_Y + tile.row * STEP_Y - layerOffset(tile.layer) * LAYER_OFF_Y;
     div.style.left = x + "px";
     div.style.top = y + "px";
     div.style.width = TILE_W + "px";
